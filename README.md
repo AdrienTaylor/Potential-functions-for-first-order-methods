@@ -20,10 +20,10 @@ Date:    February 4, 2019
 ## Organization of the code
 
 ### Deterministic first-order methods
-- [`AA_GradientDescent.m`](1_Deterministic_SmoothConvex/AA_GradientDescent.m) Code for reproducing the result of Section 3.2.1, Theorem 3 and Figure 1 (gradient method).
-- [`BB_ProximalGradientDescent.m`](1_Deterministic_SmoothConvex/BB_ProximalGradientDescent.m) Code for reproducing the result presented in Appendix C.2, Theorem 9 and Figure 1-like results (proximal gradient method).
-- [`CC_StepsizeSelection_FirstAcceleratedMethod.m`](1_Deterministic_SmoothConvex/CC_StepsizeSelection_FirstAcceleratedMethod.m) Code for reproducing the first result of Appendix C.3, Theorem 10 (first accelerated gradient method).
-- [`DD_StepsizeSelection_SecondAcceleratedMethod.m`](1_Deterministic_SmoothConvex/CC_StepsizeSelection_FirstAcceleratedMethod.m) Code for reproducing the second result of Appendix C.3, Theorem 11 (second accelerated gradient method).
+- [`A_GradientDescent.m`](1_Deterministic_SmoothConvex/A_GradientDescent.m) Code for reproducing the result of Section 3.2.1, Theorem 3 and Figure 1 (gradient method).
+- [`B_ProximalGradientDescent.m`](1_Deterministic_SmoothConvex/B_ProximalGradientDescent.m) Code for reproducing the result presented in Appendix C.2, Theorem 9 and Figure 1-like results (proximal gradient method).
+- [`C_StepsizeSelection_FirstAcceleratedMethod.m`](1_Deterministic_SmoothConvex/C_StepsizeSelection_FirstAcceleratedMethod.m) Code for reproducing the first result of Appendix C.3, Theorem 10 and Figure 3(first accelerated gradient method).
+- [`D_StepsizeSelection_SecondAcceleratedMethod.m`](1_Deterministic_SmoothConvex/D_StepsizeSelection_SecondAcceleratedMethod.m) Code for reproducing the second result of Appendix C.3, Theorem 11 and Figure 4 (second accelerated gradient method).
 
 ### Stochastic first-order methods: unbiased oracles with bounded variance
 - [``](.m) Code for reproducing the first result of Section 3.2.2, Theorem 5 (stochastic gradient descent).
