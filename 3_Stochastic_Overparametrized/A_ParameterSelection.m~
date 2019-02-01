@@ -1,63 +1,132 @@
 clear all;
 clc;
 
-verbose = 1; tolerance = 1e-8;
-ssave = 1;
-pplot = 1;
-folder = 'SaveData/';
-nname  = 'overparam_design_pavging.dat';
-relax  = 2;
-% Problem
-L = 1;
-m = 0;
-N = 100;
-n = 2;
+% SOLVER OPTIONS
+verbose     = 1;
+tolerance   = 1e-8;
 
-% P = [ xk zk yk1 | xk1 ... xkn | f1'(xk) ... fn'(xk) | f1'(yk1) ... fn'(xk1) | f1'(xk1) ... fn'(xk1) | ... | f1'(xkn) ... fn'(xkn)]
-% F = [                    fi(xk)  |  fi(yk1)  | fi(xki) fj(xki) ]
+% OUTPUT OPTIONS                   
+ssave   = 1;            % Save the results ?
+pplot   = 1;            % Plot the results ?
+folder  = 'SaveData/';  % If results saved, name of the saving folder
+nname   = 'ParameterSelection.dat';    % Name of the file
 
-dimG = 3 + 3*n + n^2; dimF = 4;
-nbPts = n+3; % xs, xk, yk1, xk1, ..., xkn
+% MINIMIZATION PROBLEM SETUP
+L = 1;      % Smoothness constant
+m = 0;      % Strong convexity constant
+n = 2;      % Cardinality of the support for the stochastic gradient
+            % (i.e., number of functions in the finite sum)
+N = 100;    % Number of iterations
 
-xk = zeros(1, dimG); xk(1) = 1;
-zk = zeros(1, dimG); zk(2) = 1;
-yk1= zeros(1, dimG); yk1(3)= 1;
-xs = zeros(1, dimG);
-xk1= zeros(n, dimG); xk1(:,4:3+n) = eye(n);
+% ALGORITHM SETUP: stochstic gradient descent with step-size policy delta_k.
+alpha = 0;
+delta = @(k)(1/L/(k+1)^(alpha));   % Step-size (possibly varying function of k)
 
-gxk = zeros(n, dimG);gxk(:,4+n:3+2*n) = eye(n);
-GXK = sum(gxk,1)/n;
-gyk1 = zeros(n, dimG);gyk1(:,4+2*n:3+3*n) = eye(n);
-GYK1 = sum(gyk1,1)/n;
-gxk1= zeros(n, dimG, n);
-GXK1= zeros(n, dimG);
-gxs = zeros(n, dimG);
-GXS = sum(gxs,1)/n;
+% POTENTIAL SETUP
+% Potential has the form:
+%   q1k ||x_k-x*||^2 + q2k ||f'(x_k)||^2 + 2 q3k E_i||f_i'(xk)||^2 
+%       + q4k <f'(x_k); x_k-x*>  + dk (f(x_k)-f(x*)) + ak ||z_k-x*||^2
 
-fxk = zeros(n, dimF); fxk(:,1) = 1;
-FXK = sum(fxk,1)/n;
-fyk1 = zeros(n, dimF); fyk1(:,2) = 1;
-FYK1 = sum(fyk1,1)/n;
-fxk1= zeros(n, dimF, n);
-FXK1= zeros(n, dimF);
-fxs = zeros(n, dimF);
-FXS = sum(fxs,1)/n;
+% INTERMEDIARY POTENTIAL SETUPS (aims at reproducing results from
+% Section 3.2.2) via option "relaxation".
 
-s_index = 4+3*n; e_index = s_index + n-1;
+% Options:
+%   Set relax = 0: use the base potential stated in Section 3.2.2.
+%   Set relax = 1: force ak = L/2.
+%   Set relax = 2: force ak = L/2 and alphak=0 (in the method)
+
+relax = 0;
+
+% INITIAL AND FINAL POTENTIALS SETUP:
+
+a0  = L/2;
+q10 = 0;
+q20 = 0;
+q30 = 0;
+q40 = 0;
+d0  = 0;
+
+tau = sdpvar(1); % variable to be maximized (see problem (3) in the paper)
+
+aN  = 0;
+q1N = 0;
+q2N = 0;
+q3N = 0;
+q4N = 0;
+dN  = tau;
+
+if relax == 1
+    a0 = L/2; aN = L/2;
+elseif relax == 2
+    a0 = L/2; aN = L/2;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                              %
+% SETTING UP THE NOTATIONS FOR THE LINEAR MATRIX INEQUALITIES  %
+%                   (end of editable zone)                     %
+%                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Recall that x* (optimum) is set to x* = 0 without loss of generality,
+% and so does f(x*) = 0. We also have fi'(x*) = 0 by assumption
+% (over-parametrized models)
+
+
+% P = [ xk zk yk1 | xk1 ... xkn | f1'(x_k) ... fn'(x_k) | f1'(y_{k+1}) ... fn'(y_{k+1}) | f1'(x_{k+1}^(1)) ... fn'(x_{k+1}^(1)) | ... | f1'(x_{k+1}^(n)) ... fn'(x_{k+1}^(n))]
+% F = [                           f1(x_k)  ... fn(x_k)  | f1(y_{k+1})  ... fn(y_{k+1})  | f1(x_{k+1}^(1))  ... fn(x_{k+1}^(1))  | ... | f1(x_{k+1}^(n))  ... fn(x_{k+1}^(n))]
+% NOTE: Symmetry arguments allow simplifying both F and G=P.'*P.
+
+dimG  = 3 + 3*n + n^2;  % dimensions of the Gram matrix P.'*P
+dimF  = 2*n + n^2;      % dimensions of F
+nbPts = n+3;    % number of points to be incorporated in the discrete
+% version of each function f_i:
+% x*,y_{k},x_{k},x_{k+1}^{(1)},...,x_{k+1}^{(n)}
+
+xk = zeros(1, dimG); xk(1) = 1; % this is x_k
+zk = zeros(1, dimG); zk(2) = 1; % this is z_k
+yk1= zeros(1, dimG); yk1(3)= 1; % this is y_{k+1}
+xs = zeros(1, dimG);            % this is x*
+xk1= zeros(n, dimG); xk1(:,4:3+n) = eye(n); % xk1(i,:) is x_{k+1}^{(i)}
+
+gxk = zeros(n, dimG);gxk(:,4+n:3+2*n) = eye(n); % gxk(i,:) is fi'(x_k)
+GXK = sum(gxk,1)/n;                             % GXK is f'(x_k)
+gyk1 = zeros(n, dimG);gyk1(:,4+2*n:3+3*n) = eye(n); % gyk(i,:) is fi'(y_{k+1})
+GYK1 = sum(gyk1,1)/n;                               % GYK1 is f'(y_{k+1})
+gxk1= zeros(n, dimG, n);    % gxk1(i,:,j) is fi'(x_{k+1}^(j))
+GXK1= zeros(n, dimG);       % GXK1(j,:)   is f'(x_{k+1}^(j))
+gxs = zeros(n, dimG);       % gxs is fi'(x*)
+GXS = sum(gxs,1)/n;         % GXS is f(x*)
+
+fxk = zeros(n, dimF); fxk(:,1:n) = eye(n);      % fxk(i,:) is fi(x_k)
+FXK = sum(fxk,1)/n;                             % FXK is f(x_k)
+fyk1 = zeros(n, dimF); fyk1(:,1+n:2*n) = eye(n);% fyk1(i,:) is fi(y_{k+1})
+FYK1 = sum(fyk1,1)/n;                           % FYK1 is f(y_{k+1})
+fxk1= zeros(n, dimF, n);  % fxk1(i,:,j) is fi(x_{k+1}^(j))
+FXK1= zeros(n, dimF);     % FXK1(j,:)  is f(x_{k+1}^(j))
+fxs = zeros(n, dimF);     % fxs(i,:)  is fi(x*)
+FXS = sum(fxs,1)/n;       % FXS is f(x*)
+
+Gs_index = 4+3*n; Ge_index = Gs_index + n-1;
+Fs_index = 1+2*n; Fe_index = Fs_index + n-1;
 for i = 1:n
-    gxk1(:,s_index:e_index,i) = eye(n);
-    s_index = s_index + n; e_index = s_index + n-1;
-    fxk1(:,4,i) = 1;
-    fxk1(i,:,i) = [0 0 1 0];
+    gxk1(:,Gs_index:Ge_index,i) = eye(n);
+    Gs_index = Gs_index + n; Ge_index = Gs_index + n-1;
+    fxk1(:,Fs_index:Fe_index,i) = eye(n);
+    Fs_index = Fs_index + n; Fe_index = Fs_index + n-1;
     FXK1(i,:)   = sum(fxk1(:,:,i),1)/n;
     GXK1(i,:)   = sum(gxk1(:,:,i),1)/n;
 end
 
+% TERMS IN THE POTENTIAL
+% Potential has the form:
+%   q1k ||x_k-x*||^2 + q2k ||f'(x_k)||^2 + 2 q3k E_i||f_i'(xk)||^2 
+%       + q4k <f'(x_k); x_k-x*>  + dk (f(x_k)-f(x*)) + ak ||z_k-x*||^2
+
 % potential part in terms of x's
-% term 1: || x - xs || ^2
-% term 2: || f'(y)  || ^2
-% term 3: || f'i(y) || ^2
-% term 4: < f'(y); y-xs >
+% term 1:    ||x-xs|| ^2
+% term 2:    ||f'(x)|| ^2
+% term 3: E_i||f'i(x)|| ^2
+% term 4: < f'(x); x-xs >
 
 term1_k  = (xk-xs).'*(xk-xs);
 term1_k1 = zeros(dimG);
@@ -90,34 +159,20 @@ for i = 1:n
     term4_k1 = term4_k1 + temp/n;
 end
 
-statesKf = (FXK - FXS);
-statesK1f = (sum(FXK1,1)/n-FXS);
-% line-searches
+statesKf = (FXK - FXS); statesK1f = (sum(FXK1,1)/n-FXS);
 
-consLSY{1} = GYK1.' * (xk - yk1); consLSY{1} = (consLSY{1}+consLSY{1}.')/2;
-consLSY{2} = GYK1.' * (zk -  xk); consLSY{2} = (consLSY{2}+consLSY{2}.')/2;
+% line-searches for finding y_{k+1}
+A{1} = GYK1.' * (xk - yk1); A{1} = (A{1}+A{1}.')/2;
+A{2} = GYK1.' * (zk -  xk); A{2} = (A{2}+A{2}.')/2;
+% line-searches for finding x_{k+1}^{(i)} (we average them, using
+% appropriate symmetry arguments (no reason for one of them to be
+% different).
 for i = 1:n
-    consLS1{1,i} = GXK1(i,:).' * (yk1 - xk1(i,:));  consLS1{1,i} = (consLS1{1,i}+consLS1{1,i}.')/2;
-    consLS1{2,i} = GXK1(i,:).' * (gyk1(i,:));   consLS1{2,i} = (consLS1{2,i}+consLS1{2,i}.')/2;
+    B{1,i} = GXK1(i,:).' * (yk1 - xk1(i,:));  B{1,i} = (B{1,i}+B{1,i}.')/2;
+    B{2,i} = GXK1(i,:).' * (gyk1(i,:));   B{2,i} = (B{2,i}+B{2,i}.')/2;
 end
 
 
-% potentials' coefficients
-Q1_0 = 0;
-Q2_0 = 0;
-Q3_0 = 0;
-Q4_0 = 0; Q0 = [Q1_0; Q2_0; Q3_0; Q4_0];
-ap_0 = L/2;
-d_0  = 0;
-
-tau = sdpvar(1);
-
-Q1_N = 0;
-Q2_N = 0;
-Q3_N = 0;
-Q4_N = 0; QN = [Q1_N; Q2_N; Q3_N; Q4_N];
-ap_N  = L/2;
-d_N   = tau;
 
 %%
 
@@ -178,11 +233,11 @@ for kl = 1 : N
         - Vx{kl}(1)*term1_k-Vx{kl}(2)*term2_k-Vx{kl}(3)*term3_k-Vx{kl}(4)*term4_k...
         + Vx{kl+1}(1)*term1_k1 + Vx{kl+1}(2)*term2_k1 + Vx{kl+1}(3)*term3_k1 + Vx{kl+1}(4)*term4_k1;
     for i = 1:2
-            cons_SDP{kl} = cons_SDP{kl} + lambdaLSY{kl}(i) * consLSY{i};
+            cons_SDP{kl} = cons_SDP{kl} + lambdaLSY{kl}(i) * A{i};
     end
     for i = 1:2
         for j = 1:n
-            cons_SDP{kl} = cons_SDP{kl} + lambdaLSX{kl}(i) * consLS1{i,j}/n;
+            cons_SDP{kl} = cons_SDP{kl} + lambdaLSX{kl}(i) * B{i,j}/n;
         end
     end
     cons_LIN{kl} = - vx{kl}.'*statesKf + vx{kl+1}.'*statesK1f;

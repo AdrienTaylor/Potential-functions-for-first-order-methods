@@ -11,31 +11,27 @@ Date:    February 4, 2019
 - [**Adrien Taylor**](http://www.di.ens.fr/~ataylor/)
 - [**Francis Bach**](https://www.di.ens.fr/~fbach/)
 
-
-#### Setup
-
 **Note:** This code requires [YALMIP](https://yalmip.github.io/) along with a suitable SDP solver (e.g., Sedumi, SDPT3, Mosek).
 
 
 ## Organization of the code
 
 ### Deterministic first-order methods
-- [`A_GradientDescent.m`](1_Deterministic_SmoothConvex/A_GradientDescent.m) Code for reproducing the result of Section 3.2.1, Theorem 3 and Figure 1 (gradient method).
-- [`B_ProximalGradientDescent.m`](1_Deterministic_SmoothConvex/B_ProximalGradientDescent.m) Code for reproducing the result presented in Appendix C.2, Theorem 9 and Figure 1-like results (proximal gradient method).
-- [`C_StepsizeSelection_FirstAcceleratedMethod.m`](1_Deterministic_SmoothConvex/C_StepsizeSelection_FirstAcceleratedMethod.m) Code for reproducing the first result of Appendix C.3, Theorem 10 and Figure 3(first accelerated gradient method).
-- [`D_StepsizeSelection_SecondAcceleratedMethod.m`](1_Deterministic_SmoothConvex/D_StepsizeSelection_SecondAcceleratedMethod.m) Code for reproducing the second result of Appendix C.3, Theorem 11 and Figure 4 (second accelerated gradient method).
+- [`A_GradientDescent`](1_Deterministic_SmoothConvex/A_GradientDescent.m) Code for reproducing the result of Section 3.2.1, Theorem 3 and Figure 1 (gradient method).
+- [`B_ProximalGradientDescent`](1_Deterministic_SmoothConvex/B_ProximalGradientDescent.m) Code for reproducing the result presented in Appendix C.2, Theorem 9 and Figure 1-like results (proximal gradient method).
+- [`C_StepsizeSelection_FirstAcceleratedMethod`](1_Deterministic_SmoothConvex/C_StepsizeSelection_FirstAcceleratedMethod.m) Code for reproducing the first result of Appendix C.3, Theorem 10 and Figure 3 (first accelerated gradient method).
+- [`D_StepsizeSelection_SecondAcceleratedMethod`](1_Deterministic_SmoothConvex/D_StepsizeSelection_SecondAcceleratedMethod.m) Code for reproducing the second result of Appendix C.3, Theorem 11 and Figure 4 (second accelerated gradient method).
 
 ### Stochastic first-order methods: unbiased oracles with bounded variance
-- [``](.m) Code for reproducing the first result of Section 3.2.2, Theorem 5 (stochastic gradient descent).
-- [``](.m) Code for reproducing the second result of Section 3.2.2, Theorem 6  (stochastic gradient descent with averaging).
-- [``](.m) Code for reproducing the third exaresultmple of Section 3.2.2, Theorem 7 (stochastic gradient descent with primal averaging).
-- [``](.m) Code for reproducing the result of Appendix D.4, Theorem 12 (stochastic gradient descent with evaluation at the averaged iterate).
-- [``](.m) Code for reproducing the first result of Appendix D.6, Theorem 13 (stochastic gradient descent with momentum).
+- [`A_StochasticGradientDescent`](2_Stochastic_BoundedVariance/A_StochasticGradientDescent.m) Code for reproducing the first result of Section 3.2.2, Theorem 5 and Figure 2 (stochastic gradient descent).
+- [`B_StochasticGradientDescentWithAveraging`](2_Stochastic_BoundedVariance/B_StochasticGradientDescentWithAveraging.m) Code for reproducing the second result of Section 3.2.2, Theorem 6  (stochastic gradient descent with averaging).
+- [`C_StochasticGradientDescentWithPrimalAveraging`](2_Stochastic_BoundedVariance/C_StochasticGradientDescentWithPrimalAveraging.m) Code for reproducing the third exaresultmple of Section 3.2.2, Theorem 7 (stochastic gradient descent with primal averaging).
+- [`D_StochasticGradientDescent_EvaluationAtAveragedPoint`](2_Stochastic_BoundedVariance/D_StochasticGradientDescent_EvaluationAtAveragedPoint.m) Code for reproducing the result of Appendix D.4, Theorem 12 (stochastic gradient descent with evaluation at the averaged iterate).
 
 ### Stochastic first-order methods: unbiased oracles arising from sampling in expectations of smooth convex functions
 
 #### Over-parametrized models
-- [``](.m) Code for reproducing the result of Section 4 and Appendix E, Theorem 8 (stochastic gradient descent with primal averaging, using the parameter selection technique).
+- [`A_ParameterSelection`](3_Stochastic_Overparametrized/A_ParameterSelection.m) Code for reproducing the result of Section 4 and Appendix E, Theorem 8 and Figure 5 (obtaining stochastic gradient descent with primal averaging, using the parameter selection technique).
 
 #### Bounded variance at optimum
 - [``](.m) Code for reproducing the result of Appendix G, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).

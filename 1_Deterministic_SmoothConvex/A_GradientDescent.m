@@ -35,7 +35,7 @@ relax = 0;
 %   ak ||x_k-x*||^2 + bk ||f'(x_k)||^2 + 2 ck <f'(x_k); x_k-x*> 
 %       + dk (f(x_k)-f(x*)).
 
-a0  = L^2;
+a0 = L^2;
 b0 = 0;
 c0 = 0;
 d0 = 0;
@@ -179,10 +179,10 @@ if pplot
     dk = zeros(1, N+1);
     
     for i = 1:N+1
-        ak(i)  = double(Q{i}(1,1)).';
-        bk(i)  = double(Q{i}(2,2)).';
-        ck(i)  = double(Q{i}(2,1)).';
-        dk(i)  = double(d{i}(1,1)).';
+        ak(i)  = double(Q{i}(1,1));
+        bk(i)  = double(Q{i}(2,2));
+        ck(i)  = double(Q{i}(2,1));
+        dk(i)  = double(d{i}(1,1));
     end
     
     subplot(2,2,1);
