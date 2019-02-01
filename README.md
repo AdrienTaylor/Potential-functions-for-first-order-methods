@@ -20,7 +20,7 @@ Date:    February 4, 2019
 ## Organization of the code
 
 ### Deterministic first-order methods
-- [``](.m) Code for reproducing the result of Section 3.2.1, Theorem 3 (gradient method).
+- [`1_Deterministic_SmoothConvex/AA_GradientDescent.m`](AA_GradientDescent.m) Code for reproducing the result of Section 3.2.1, Theorem 3 (gradient method).
 - [``](.m) Code for reproducing the result presented in Appendix C.2, Theorem 9 (proximal gradient method).
 - [``](.m) Code for reproducing the first result of Appendix C.3, Theorem 10 (first accelerated gradient method).
 - [``](.m) Code for reproducing the second result of Appendix C.3, Theorem 11 (second accelerated gradient method).
