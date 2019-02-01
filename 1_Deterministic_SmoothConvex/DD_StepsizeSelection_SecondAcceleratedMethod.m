@@ -1,50 +1,104 @@
 clear all;
 clc;
 
-verbose = 1; tolerance = 1e-8;
-ssave = 0;
-pplot = 1;
-folder = 'SaveData/';
-nname  = 'FGM2_inter.dat';
+% SOLVER OPTIONS
+verbose     = 1;
+tolerance   = 1e-8;
 
-% Problem
-L = 1;
-m = 0;
-N = 100;
+% OUTPUT OPTIONS
+ssave   = 1; % Save the results ?
+pplot   = 1; % Plot the results ?
+folder = 'SaveData/';           % If results saved, name of the saving folder
+nname  = 'FastGradientD2.dat';  % Name of the file
 
-% P = [ xk zk | yk1 xk1 | f'(xk)  | f'(yk1) f'(xk1) ]
-% F = [                    f(xk)  |  f(yk1)  f(xk1)  ]
+% MINIMIZATION PROBLEM SETUP
+L = 1;      % Smoothness constant
+m = 0;      % Strong convexity constant
+N = 100;    % Number of iterations
 
-dimG  = 5;
-dimF  = 2;
-nbPts = 3; % xs, yk,  yk1
+% INTERMEDIARY POTENTIAL SETUPS (aims at reproducing results from Appendix
+% C.3; Figure 4) via option "relaxation".
+% Options:
+%   Set relax = 0: use the base potential stated in Section 3.2.1.
+%   Set relax = 1: force ak = L/2; Qk = 0
+%   Set relax = 2: force ak = L/2, Qk(1,1)=Qk(1,2)=0, Qk(2,2)=dk/2/L
 
-yk  = zeros(1, dimG); yk(1)  = 1;
-yk1 = zeros(1, dimG); yk1(2) = 1;
-zk  = zeros(1, dimG); zk(3)  = 1;
-xs  = zeros(1, dimG);
+relax = 2;
 
-gyk = zeros(1, dimG); gyk(4) = 1;
-gyk1= zeros(1, dimG);gyk1(5) = 1;
-gxs = zeros(1, dimG);
+% INITIAL AND FINAL POTENTIALS SETUP:
+% Potential has the form:
+%   Q(1,1) ||x_k-x*||^2 + Q(2,2) ||F'(x_k)||^2 + 2 Q(1,2) <F'(x_k); x_k-x*>
+%       + ak ||z_k-x*||^2 + dk (F(x_k)-f(x*)).
 
-fyk = zeros(1, dimF); fyk(1) = 1;
-fyk1= zeros(1, dimF);fyk1(2) = 1;
-fxs = zeros(1, dimF);
+Q0 = zeros(2);
+a0 = L/2;
+d0 = 0;
 
-XX = {  xs,  yk,    yk1};
-GG = { gxs, gyk,   gyk1};
-FF = { fxs, fyk,   fyk1};
+tau = sdpvar(1); % variable to be maximized (see problem (12) in the paper)
+QN  = zeros(2);
+aN  = 0;
+dN  = tau;
 
-% Potential function
-statesKx  = [yk-xs;   gyk];   statesKf  = fyk-fxs;
-statesK1x = [yk1-xs; gyk1];   statesK1f = fyk1-fxs;
+if relax == 1
+    a0 = L/2; aN = L/2;
+    Q0 = zeros(2); QN = zeros(2);
+elseif relax == 2
+    a0 = L/2; aN = L/2;
+    Q0 = [0 0; 0 d0/2/L]; QN = [0 0; 0 dN/2/L];
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                              %
+% SETTING UP THE NOTATIONS FOR THE LINEAR MATRIX INEQUALITIES  %
+%                   (end of editable zone)                     %
+%                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Minimization of f(x)  with f smooth (possibly strongly) convex.
+% Recall that x* (optimum) is set to x* = 0 without loss of generality,
+% and so does f(x*) = 0.
+
+% P = [ z_k  y_k  y_{k+1} f'(y_k) f'(y_{k+1})  ]
+% F = [                   f(y_k)  f(y_{k+1})   ]
+
+dimG  = 5; % dimensions of the Gram matrix P.'*P
+dimF  = 2; % dimensions of F
+nbPts = 3; % number of points to be incorporated in the discrete
+% version of the function f: x*, y_k, y_{k+1}
 
 
-% line search for yk1
-consLSY{1} = gyk1.'*(yk-yk1);   consLSY{1} = 1/2*(consLSY{1}+consLSY{1}.');
-consLSY{2} = gyk1.'*(zk-yk);    consLSY{2} = 1/2*(consLSY{2}+consLSY{2}.');
-consLSY{3} = gyk1.'* gyk;       consLSY{3} = 1/2*(consLSY{3}+consLSY{3}.');
+zk  = zeros(1, dimG); zk(1)  = 1; % this is z_k
+yk  = zeros(1, dimG); yk(2)  = 1; % this is y_k
+yk1 = zeros(1, dimG); yk1(3) = 1; % this is y_{k+1}
+xs  = zeros(1, dimG);             % this is x*
+
+gyk = zeros(1, dimG); gyk(4) = 1; % this is f'(y_k)
+gyk1= zeros(1, dimG);gyk1(5) = 1; % this is f'(y_{k+1})
+gxs = zeros(1, dimG);             % this is f'(x*)
+
+fyk = zeros(1, dimF); fyk(1) = 1; % this is f(y_k)
+fyk1= zeros(1, dimF);fyk1(2) = 1; % this is f(y_{k+1})
+fxs = zeros(1, dimF);             % this is f(x*)
+
+% POINTS IN THE DISCRETE REPRESENTATION OF FUNCTION f(.)
+XX = {  xs,  yk,    yk1}; % coordinates 
+GG = { gxs, gyk,   gyk1}; % gradients
+FF = { fxs, fyk,   fyk1}; % function values
+
+% line-search for y_{k+1}
+A{1} = gyk1.'*(yk-yk1);   A{1} = 1/2*(A{1}+A{1}.'); % <f'(y_{k+1}); y_k-y_{k+1}> == 0
+A{2} = gyk1.'*(zk-yk);    A{2} = 1/2*(A{2}+A{2}.'); % <f'(y_{k+1}); z_K-y_k> == 0
+A{3} = gyk1.'* gyk;       A{3} = 1/2*(A{3}+A{3}.'); % <f'(y_{k+1}); f'(y_k)> == 0
+
+% Matrix encoding interpolation condition for smooth strongly convex functions
+M = 1/2/(L-m) *[  -L*m,  L*m,   m, -L;
+    L*m, -L*m,  -m,  L;
+    m,   -m,  -1,  1;
+    -L,   L,   1,  -1];
+
+% Notations for potentials
+statesKG  = [yk-xs;   gyk];   statesKF  = fyk-fxs;
+statesK1G = [yk1-xs; gyk1];   statesK1F = fyk1-fxs;
+
 
 
 dimQ = 2; % in the same ordering: yk-x* | f'(yk)
