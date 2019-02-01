@@ -108,7 +108,7 @@ statesK1G = [xk1-xs; gxk1];   statesK1F = fxk1-fxs;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                              %
 %          SETTING UP THE LINEAR MATRIX INEQUALITIES           %
-%     (directly embedded within the larger problem (2))        %
+%     (directly embedded within the larger problem (12))       %
 %                                                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -153,7 +153,7 @@ for k = 1 : N % iteration counter (one LMI per iteration)
     for i = 1:4
         cons_SDP{k} = cons_SDP{k} + mu{k}(i) * A{i};
     end
-    cons_LIN{k} = - d{k}.' * statesKF + d{k+1}.' * statesK1F;
+    cons_LIN{k} = - d{k} * statesKF + d{k+1} * statesK1F;
     
     for i = 1:nbPts
         for j = 1:nbPts
