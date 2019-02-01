@@ -19,18 +19,28 @@ Date:    February 4, 2019
 
 ## Organization of the code
 
-
-
 ### Deterministic first-order methods
-- [`ExactLS_distance_validations`](ExactLS_distance_validations.m) 
+- [``](.m) Code for reproducing the result of Section 3.2.1, Theorem 3 (gradient method).
+- [``](.m) Code for reproducing the result presented in Appendix C.2, Theorem 9 (proximal gradient method).
+- [``](.m) Code for reproducing the first result of Appendix C.3, Theorem 10 (first accelerated gradient method).
+- [``](.m) Code for reproducing the second result of Appendix C.3, Theorem 11 (second accelerated gradient method).
 
 ### Stochastic first-order methods: unbiased oracles with bounded variance
+- [``](.m) Code for reproducing the first result of Section 3.2.2, Theorem 5 (stochastic gradient descent).
+- [``](.m) Code for reproducing the second result of Section 3.2.2, Theorem 6  (stochastic gradient descent with averaging).
+- [``](.m) Code for reproducing the third exaresultmple of Section 3.2.2, Theorem 7 (stochastic gradient descent with primal averaging).
+- [``](.m) Code for reproducing the result of Appendix D.4, Theorem 12 (stochastic gradient descent with evaluation at the averaged iterate).
+- [``](.m) Code for reproducing the first result of Appendix D.6, Theorem 13 (stochastic gradient descent with momentum).
 
-### Stochastic first-order methods: unbiased oracles arising from sampling in sums of smooth convex functions
-
-#### Bounded variance at optimum
+### Stochastic first-order methods: unbiased oracles arising from sampling in expectations of smooth convex functions
 
 #### Over-parametrized models
+- [``](.m) Code for reproducing the result of Section 4 and Appendix E, Theorem 8 (stochastic gradient descent with primal averaging, using the parameter selection technique).
 
-### Stochastic first-order methods: unbiased oracles with weak growth conditions
+#### Bounded variance at optimum
+- [``](.m) Code for reproducing the result of Appendix G, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
+
+
+### Stochastic first-order methods: unbiased oracles under weak growth conditions
+- [``](.m) Code for reproducing the result of Appendix F, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
 
