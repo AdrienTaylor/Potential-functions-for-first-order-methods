@@ -18,8 +18,11 @@ nname   = 'SGD.dat';    % Name of the file
 L = 1;      % Smoothness constant
 m = 0;      % Strong convexity constant
 n = 2;      % Cardinality of the support for the stochastic gradient
-N = 10;    % Number of iterations
+N = 100;    % Number of iterations
 
+% ALGORITHM SETUP: stochstic gradient descent with step-size policy delta_k.
+alpha = 0;
+delta = @(k)(1/L/(k+1)^(alpha));   % Step-size (possibly varying function of k)
 
 % POTENTIAL SETUP
 % Potential has the form:
