@@ -5,7 +5,7 @@ clc;
 verbose     = 1;
 tolerance   = 1e-8;
 
-% OUTPUT OPTIONS                   
+% OUTPUT OPTIONS     
 ssave   = 1;            % Save the results ?
 pplot   = 1;            % Plot the results ?
 folder  = 'SaveData/';  % If results saved, name of the saving folder
@@ -16,18 +16,18 @@ L = 1;      % Smoothness constant
 m = 0;      % Strong convexity constant
 n = 2;      % Cardinality of the support for the stochastic gradient
             % (i.e., number of functions in the finite sum)
-N = 100;    % Number of iterations
+N = 10;     % Number of iterations
 
 % POTENTIAL SETUP
 % Potential has the form:
-%   q1k ||x_k-x*||^2 + q2k ||f'(x_k)||^2 + 2 q3k E_i||f_i'(xk)||^2 
+%   q1k ||x_k-x*||^2 + q2k ||f'(x_k)||^2 + 2 q3k E_i||fi'(xk)-fi'(x*)||^2 
 %       + q4k <f'(x_k); x_k-x*>  + dk (f(x_k)-f(x*)) + ak ||z_k-x*||^2
+%
+% In this code, we fix the value of dN to .9*N. and minimize \sum_k ek
 
-% INTERMEDIARY POTENTIAL SETUPS (aims at reproducing results from
-% Section 4 and Appendix E) via option "relaxation".
-
+% INTERMEDIARY POTENTIAL SETUPS
 % Options:
-%   Set relax = 0: use the base potential stated in Appendix E.2 (Fig 5).
+%   Set relax = 0: 
 %   Set relax = 1: force ak = L/2.
 %   Set relax = 2: force ak = L/2 and alphak=0 (in the method)
 %   Set relax = 3: force ak = L/2, q1k=q2k=q3k=q4k=0 and alphak=0 (in the method)
@@ -43,14 +43,12 @@ q30 = 0;
 q40 = 0;
 d0  = 0;
 
-tau = sdpvar(1); % variable to be maximized (see problem (3) in the paper)
-
 aN  = 0;
 q1N = 0;
 q2N = 0;
 q3N = 0;
 q4N = 0;
-dN  = tau;
+dN  = .9*N;
 
 if relax == 1
     a0 = L/2; aN = L/2;
@@ -75,11 +73,11 @@ end
 % (over-parametrized models)
 
 
-% P = [ xk zk yk1 | xk1 ... xkn | f1'(x_k) ... fn'(x_k) | f1'(y_{k+1}) ... fn'(y_{k+1}) | f1'(x_{k+1}^(1)) ... fn'(x_{k+1}^(1)) | ... | f1'(x_{k+1}^(n)) ... fn'(x_{k+1}^(n))]
+% P = [ xk zk yk1 | xk1 ... xkn | f1'(x_k) ... fn'(x_k) | f1'(y_{k+1}) ... fn'(y_{k+1}) | f1'(x_{k+1}^(1)) ... fn'(x_{k+1}^(1)) | ... | f1'(x_{k+1}^(n)) ... fn'(x_{k+1}^(n)) | f1'(x*) ... fn'(x*)]
 % F = [                           f1(x_k)  ... fn(x_k)  | f1(y_{k+1})  ... fn(y_{k+1})  | f1(x_{k+1}^(1))  ... fn(x_{k+1}^(1))  | ... | f1(x_{k+1}^(n))  ... fn(x_{k+1}^(n))]
 % NOTE: Symmetry arguments allow simplifying both F and G=P.'*P.
 
-dimG  = 3 + 3*n + n^2;  % dimensions of the Gram matrix P.'*P
+dimG  = 2 + 4*n + n^2;  % dimensions of the Gram matrix P.'*P
 dimF  = 2*n + n^2;      % dimensions of F
 nbPts = n+3;    % number of points to be incorporated in the discrete
 % version of each function f_i:
@@ -98,6 +96,8 @@ GYK1 = sum(gyk1,1)/n;                               % GYK1 is f'(y_{k+1})
 gxk1= zeros(n, dimG, n);    % gxk1(i,:,j) is fi'(x_{k+1}^(j))
 GXK1= zeros(n, dimG);       % GXK1(j,:)   is f'(x_{k+1}^(j))
 gxs = zeros(n, dimG);       % gxs is fi'(x*)
+gxs(1:n-1,dimG-(n-2):dimG) = eye(n-1); 
+gxs(end,:) = - sum(gxs,1);                              
 GXS = sum(gxs,1)/n;         % GXS is f(x*)
 
 fxk = zeros(n, dimF); fxk(:,1:n) = eye(n);      % fxk(i,:) is fi(x_k)
@@ -122,13 +122,13 @@ end
 
 % TERMS IN THE POTENTIAL
 % Potential has the form:
-%   q1k ||x_k-x*||^2 + q2k ||f'(x_k)||^2 + 2 q3k E_i||f_i'(xk)||^2 
+%   q1k ||x_k-x*||^2 + q2k ||f'(x_k)||^2 + 2 q3k E_i||fi'(xk)-fi'(x*)||^2 
 %       + q4k <f'(x_k); x_k-x*>  + dk (f(x_k)-f(x*)) + ak ||z_k-x*||^2
 
 % potential part in terms of x's
 % term 1:    ||x-xs|| ^2
 % term 2:    ||f'(x)|| ^2
-% term 3: E_i||f'i(x)|| ^2
+% term 3: E_i||f'i(x)-fi'(x*)|| ^2
 % term 4: < f'(x); x-xs >
 
 term1_k  = (xk-xs).'*(xk-xs);
@@ -145,13 +145,13 @@ end
 
 term3_k  = zeros(dimG);
 for i = 1:n
-    term3_k = term3_k + gxk(i,:).'*gxk(i,:)/n;
+    term3_k = term3_k + (gxk(i,:)-gxs(i,:)).'*(gxk(i,:)-gxs(i,:))/n;
 end
 
 term3_k1 = zeros(dimG);
 for i = 1:n
     for j = 1:n
-        term3_k1 = term3_k1 + gxk1(i,:,j).'*gxk1(i,:,j)/n^2;
+        term3_k1 = term3_k1 + (gxk1(i,:,j)-gxs(i,:)).'*(gxk1(i,:,j)-gxs(i,:))/n^2;
     end
 end
 
@@ -181,7 +181,13 @@ M = 1/2/(L-m) *[   -L*m,  L*m,   m, -L;
                     L*m, -L*m,  -m,  L;
                       m,   -m,  -1,  1;
                      -L,   L,   1,  -1];
-                 
+
+% Matrix encoding the variance condition
+Avar = zeros(dimG);
+for i = 1:n
+    Avar = Avar + (gxs(i,:)-GXS).'*(gxs(i,:)-GXS)/n;
+end
+
 % Notations for potentials
 statesKF = (FXK - FXS); statesK1F = (sum(FXK1,1)/n-FXS);
 %%
@@ -200,7 +206,7 @@ Q{N+1} = [q1N q2N q3N q4N].';
 d{N+1} = dN;
 a{N+1} = aN;
 
-cons = (tau >= 0);
+cons = [];
 for k = 1 : N % iteration counter (one LMI per iteration)
     if k < N
         if ~relax % no additional constraints on potentials
@@ -227,6 +233,7 @@ for k = 1 : N % iteration counter (one LMI per iteration)
     lambda{k}   = sdpvar(nbPts,nbPts,n,'full');
     mu_Y{k}     = sdpvar(2,1); % multipliers for the line-search for y_{k+1}
     mu_X{k}     = sdpvar(2,1); % multipliers for the line-search for x_{k+1}
+    e{k}        = sdpvar(1);   % multiplier for the variance
 
     
     S{k} = sdpvar(3); % this is Sk (see Section C.5)
@@ -241,7 +248,7 @@ for k = 1 : N % iteration counter (one LMI per iteration)
     end
     
     
-    cons_SDP{k} = - a{k} * (zk-xs).'*(zk-xs) +  dsstep_avg ...
+    cons_SDP{k} = - a{k} * (zk-xs).'*(zk-xs) - e{k} * Avar +  dsstep_avg ...
         - Q{k}(1)*term1_k-Q{k}(2)*term2_k-Q{k}(3)*term3_k-Q{k}(4)*term4_k...
         + Q{k+1}(1)*term1_k1 + Q{k+1}(2)*term2_k1 + Q{k+1}(3)*term3_k1 + Q{k+1}(4)*term4_k1;
     for i = 1:2
@@ -282,11 +289,15 @@ for k = 1 : N % iteration counter (one LMI per iteration)
     cons = cons + (cons_LIN{k} == 0);
     cons = cons + (lambda{k} >= 0);
 end
-obj = tau;
+
+accumulated_ek  = 0;
+for k = 1:N
+    accumulated_ek = accumulated_ek + e{k};
+end
+obj = accumulated_ek;
 
 solver_opt = sdpsettings('solver','mosek','verbose',verbose,'mosek.MSK_DPAR_INTPNT_CO_TOL_PFEAS',tolerance);
-solverDetails=optimize(cons,-obj,solver_opt);
-
+solverDetails=optimize(cons,obj,solver_opt);
 
 %% Try to grasp what happens...
 if pplot
@@ -301,6 +312,8 @@ if pplot
     tauk = zeros(1, N+1);
     deltak = zeros(1, N+1);
     gammak = zeros(1, N+1);
+    ek = zeros(1, N+1);
+    ekc= zeros(1, N+1);
     
     tolp = 1e-5;
     for i = 1:N+1
@@ -317,9 +330,17 @@ if pplot
         deltak(i) = double(S{i}(1,2)/S{i}(1,1));
         gammak(i) = -double(S{i}(1,3)/S{i}(1,1));
     end
-    figure;  hold on;
+    for i = 2:N+1
+        ek(i)  = double(e{i-1}(1));
+        ekc(i) = sum(ek(1:i));
+    end
+    figure;
     subplot(4,3,1); 
     plot(1:N+1,Q1,'-b'); title('q1k (coefficient of ||xk-x*||^2)')
+    subplot(4,3,2); 
+    plot(1:N+1,ek,'-b'); hold on; title('ek (coefficient of sigma^2)');
+    subplot(4,3,3); 
+    plot(1:N+1,ekc,'-b'); hold on; title('cumulated ek ');
     subplot(4,3,4); 
     plot(1:N+1,Q2,'-b');title('q2k (coefficient of ||f''(xk)||^2)')
     subplot(4,3,5);
@@ -340,8 +361,8 @@ if pplot
     plot(1:N,gammak(1:end-1),'-b'); title('gammak')
     
     if ssave
-        labels{1} = 'k'; labels{2} = 'Q1'; labels{3} = 'Q2'; labels{4} = 'Q3'; labels{5} = 'Q4'; labels{6} = 'apk'; labels{7} = 'dk'; labels{8} = 'alphak'; labels{9} = 'tauk'; labels{10} = 'deltak'; labels{11} = 'gammak';
-        data = [(1:N+1).' Q1.'  Q2.' Q3.' Q4.' apk.' dk.' alphak.' tauk.' deltak.' gammak.'];
+        labels{1} = 'k'; labels{2} = 'Q1'; labels{3} = 'Q2'; labels{4} = 'Q3'; labels{5} = 'Q4'; labels{6} = 'apk'; labels{7} = 'dk'; labels{8} = 'alphak'; labels{9} = 'tauk'; labels{10} = 'deltak'; labels{11} = 'gammak'; labels{12} = 'ek'; labels{13} = 'ekc';
+        data = [(1:N+1).' Q1.'  Q2.' Q3.' Q4.' apk.' dk.' alphak.' tauk.' deltak.' gammak.' ek.' ekc.'];
         saveData([folder nname],data,labels);
     end
 end

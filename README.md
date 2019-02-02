@@ -25,7 +25,7 @@ Date:    February 4, 2019
 ### Stochastic first-order methods: unbiased oracles with bounded variance
 - [`A_StochasticGradientDescent`](2_Stochastic_BoundedVariance/A_StochasticGradientDescent.m) Code for reproducing the first result of Section 3.2.2, Theorem 5 and Figure 2 (stochastic gradient descent).
 - [`B_StochasticGradientDescentWithAveraging`](2_Stochastic_BoundedVariance/B_StochasticGradientDescentWithAveraging.m) Code for reproducing the second result of Section 3.2.2, Theorem 6  (stochastic gradient descent with averaging).
-- [`C_StochasticGradientDescentWithPrimalAveraging`](2_Stochastic_BoundedVariance/C_StochasticGradientDescentWithPrimalAveraging.m) Code for reproducing the third exaresultmple of Section 3.2.2, Theorem 7 (stochastic gradient descent with primal averaging).
+- [`C_StochasticGradientDescentWithPrimalAveraging`](2_Stochastic_BoundedVariance/C_StochasticGradientDescentWithPrimalAveraging.m) Code for reproducing the third result of Section 3.2.2, Theorem 7 (stochastic gradient descent with primal averaging).
 - [`D_StochasticGradientDescent_EvaluationAtAveragedPoint`](2_Stochastic_BoundedVariance/D_StochasticGradientDescent_EvaluationAtAveragedPoint.m) Code for reproducing the result of Appendix D.4, Theorem 12 (stochastic gradient descent with evaluation at the averaged iterate).
 
 ### Stochastic first-order methods: unbiased oracles arising from sampling in expectations of smooth convex functions
@@ -34,9 +34,9 @@ Date:    February 4, 2019
 - [`A_ParameterSelection`](3_Stochastic_Overparametrized/A_ParameterSelection.m) Code for reproducing the result of Section 4 and Appendix E, Theorem 8 and Figure 5 (obtaining stochastic gradient descent with primal averaging, using the parameter selection technique).
 
 #### Bounded variance at optimum
-- [``](.m) Code for reproducing the result of Appendix G, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
+- [`A_ParameterSelection`](5_Stochastic_VarianceAtOptimum/A_ParameterSelection.m) Code for recovering the result of Appendix G, Theorem 15 (stochastic gradient descent with primal averaging from the parameter selection technique).
 
 
 ### Stochastic first-order methods: unbiased oracles under weak growth conditions
-- [``](.m) Code for reproducing the result of Appendix F, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
+- - [`A_StochasticGradientDescentWithPrimalAveraging`](5_Stochastic_WeakGrowth/A_StochasticGradientDescentWithPrimalAveraging.m) Code for verifying the result of Appendix F, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
 
