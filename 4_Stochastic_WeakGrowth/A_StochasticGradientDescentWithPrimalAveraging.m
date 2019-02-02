@@ -1,8 +1,7 @@
 clear all;
 clc;
 
-% This code simply checks feasibility of Theorem 14 for primal averaging,
-% (i.e., Lyapunov function is partially imposed and only the \sum e_k is minimized.)
+% This code simply checks feasibility of Theorem 14 for primal averaging.
 
 
 % SOLVER OPTIONS

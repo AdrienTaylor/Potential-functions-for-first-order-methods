@@ -2,7 +2,7 @@ clear all;
 clc;
 
 % This code simply checks feasibility of Theorem 7 for primal averaging,
-% (i.e., Lyapunov function is partially imposed and only the \sum e_k is minimized.)
+% (potential function is partially imposed and only the \sum e_k is minimized.)
 
 
 % SOLVER OPTIONS
