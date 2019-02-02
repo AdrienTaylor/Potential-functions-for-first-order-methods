@@ -38,5 +38,5 @@ Date:    February 4, 2019
 
 
 ### Stochastic first-order methods: unbiased oracles under weak growth conditions
-- - [`A_StochasticGradientDescentWithPrimalAveraging`](5_Stochastic_WeakGrowth/A_StochasticGradientDescentWithPrimalAveraging.m) Code for verifying the result of Appendix F, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
+- [`A_StochasticGradientDescentWithPrimalAveraging`](4_Stochastic_WeakGrowth/A_StochasticGradientDescentWithPrimalAveraging.m) Code for verifying the result of Appendix F, Theorem 15 (stochastic gradient descent with primal averaging, parameter selection technique).
 
