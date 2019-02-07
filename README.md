@@ -1,8 +1,8 @@
 # Potential functions for first-order methods
 
-This code comes jointly with the following reference:
+This code comes jointly with the following [reference](https://arxiv.org/abs/1902.00947):
 
-> [1] Adrien Taylor, and Francis Bach. "Stochastic first-order methods: non-asymptotic and computer-aided analyses via potential functions."
+> [1] Adrien Taylor, and Francis Bach. "Stochastic first-order methods: non-asymptotic and computer-aided analyses via potential functions," arXiv:1902.00947, 2019.
 
 Date:    February 4, 2019
 
