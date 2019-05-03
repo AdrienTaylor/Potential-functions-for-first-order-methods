@@ -1,6 +1,6 @@
 clear all;
 clc;
-
+tic;
 % SOLVER OPTIONS
 verbose     = 1;
 tolerance   = 1e-8;
@@ -204,6 +204,7 @@ if reoptimize
     solverDetails=optimize(cons,accumulated_ek,solver_opt);
 end
 
+toc
 %% Try to grasp what happens by plotting !
 if pplot
     close all;
@@ -243,7 +244,6 @@ if pplot
         saveData([folder nname],data,labels);
     end
 end
-
 
 
 

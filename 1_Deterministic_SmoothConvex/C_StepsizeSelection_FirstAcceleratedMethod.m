@@ -1,6 +1,6 @@
 clear all;
 clc;
-
+tic;
 % SOLVER OPTIONS
 verbose     = 1;
 tolerance   = 1e-8;
@@ -23,7 +23,7 @@ N = 100;    % Number of iterations
 %   Set relax = 1: force ak = L/2; Qk = 0
 %   Set relax = 2: force ak = L/2, Qk(1,1)=Qk(1,2)=0, Qk(2,2)=dk/2/L
 
-relax = 2;
+relax = 0;
 
 % INITIAL AND FINAL POTENTIALS SETUP:
 % Potential has the form:
@@ -177,6 +177,7 @@ obj = tau;
 solver_opt = sdpsettings('solver','mosek','verbose',verbose,'mosek.MSK_DPAR_INTPNT_CO_TOL_PFEAS',tolerance);
 solverDetails=optimize(cons,-obj,solver_opt);
 
+toc
 
 %% Try to grasp what happens by plotting !
 if pplot
@@ -231,7 +232,6 @@ if pplot
         saveData([folder nname],data,labels);
     end
 end
-
 
 
 

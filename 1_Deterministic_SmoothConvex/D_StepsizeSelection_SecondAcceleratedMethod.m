@@ -1,6 +1,6 @@
 clear all;
 clc;
-
+tic
 % SOLVER OPTIONS
 verbose     = 1;
 tolerance   = 1e-8;
@@ -171,6 +171,7 @@ obj = tau;
 solver_opt = sdpsettings('solver','mosek','verbose',verbose,'mosek.MSK_DPAR_INTPNT_CO_TOL_PFEAS',tolerance);
 solverDetails=optimize(cons,-obj,solver_opt);
 
+toc
 
 %% Try to grasp what happens by plotting !
 if pplot
@@ -229,7 +230,6 @@ if pplot
         saveData([folder nname],data,labels);
     end
 end
-
 
 
 

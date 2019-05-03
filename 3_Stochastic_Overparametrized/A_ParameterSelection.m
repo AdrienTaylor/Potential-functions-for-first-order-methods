@@ -1,6 +1,6 @@
 clear all;
 clc;
-
+tic;
 % SOLVER OPTIONS
 verbose     = 1;
 tolerance   = 1e-8;
@@ -32,7 +32,7 @@ N = 100;    % Number of iterations
 %   Set relax = 2: force ak = L/2 and alphak=0 (in the method)
 %   Set relax = 3: force ak = L/2, q1k=q2k=q3k=q4k=0 and alphak=0 (in the method)
 
-relax = 3;
+relax = 0;
 
 % INITIAL AND FINAL POTENTIALS SETUP:
 
@@ -221,13 +221,13 @@ for k = 1 : N % iteration counter (one LMI per iteration)
             a{k+1} = L/2;
         end
     end
-    if relax == 2
-        cons = cons + (mu_X{k}(2) == 0);
-    end
     lambda{k}   = sdpvar(nbPts,nbPts,n,'full');
     mu_Y{k}     = sdpvar(2,1); % multipliers for the line-search for y_{k+1}
     mu_X{k}     = sdpvar(2,1); % multipliers for the line-search for x_{k+1}
 
+    if relax == 2
+        cons = cons + (mu_X{k}(2) == 0);
+    end
     
     S{k} = sdpvar(3); % this is Sk (see Section C.5)
     cons = cons + (S{k} >= 0);
@@ -286,7 +286,7 @@ obj = tau;
 
 solver_opt = sdpsettings('solver','mosek','verbose',verbose,'mosek.MSK_DPAR_INTPNT_CO_TOL_PFEAS',tolerance);
 solverDetails=optimize(cons,-obj,solver_opt);
-
+toc
 
 %% Try to grasp what happens...
 if pplot

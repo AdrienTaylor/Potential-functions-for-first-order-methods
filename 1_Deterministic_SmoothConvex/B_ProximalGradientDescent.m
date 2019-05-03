@@ -6,7 +6,7 @@ verbose     = 1;
 tolerance   = 1e-8;
 
 % OUTPUT OPTIONS
-ssave   = 1; % Save the results ? 
+ssave   = 0; % Save the results ? 
 pplot   = 1; % Plot the results ?
 folder  = 'SaveData/';          % If results saved, name of the saving folder
 nname   = 'ProxGradientD.dat';  % Name of the file
@@ -28,7 +28,7 @@ delta = @(k)(1/L);   % Step-size (possibly varying function of k)
 %   Set relax = 2: force dk = (2*k+1)*L, ck = 0 and ak = L^2.
 %   Set relax = 3: force dk = 0.
 
-relax = 0;
+relax = 2;
 
 % INITIAL AND FINAL POTENTIALS SETUP:
 % Potential has the form: 
