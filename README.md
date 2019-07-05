@@ -1,6 +1,6 @@
 # Potential functions for first-order methods
 
-This code comes jointly with the following [reference](http://proceedings.mlr.press/v99/taylor19a.html) (alternatively, it is on [arXiv])(https://arxiv.org/abs/1902.00947)
+This code comes jointly with the following [reference](http://proceedings.mlr.press/v99/taylor19a.html) (alternatively, it is on [arXiv](https://arxiv.org/abs/1902.00947))
 
 > [1] Adrien Taylor, and Francis Bach. "Stochastic first-order methods: non-asymptotic and computer-aided analyses via potential functions," Proceedings of the International Conference on Learning Theory (COLT), 2019.
 
